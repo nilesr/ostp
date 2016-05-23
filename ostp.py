@@ -47,6 +47,10 @@ while True:
     for i in d:
         port = fixport(str(i[1].now())[:4])
         subprocess.call(["iptables", "-t", "nat", "-A", "PREROUTING", "-p", "tcp", "--dport", port, "-j","DNAT","--to-destination", i[0] + ":22"])
+        port = fixport(str(i[1].at(int(time.time()) + 30))[:4])
+        subprocess.call(["iptables", "-t", "nat", "-A", "PREROUTING", "-p", "tcp", "--dport", port, "-j","DNAT","--to-destination", i[0] + ":22"])
+        port = fixport(str(i[1].at(int(time.time()) - 30))[:4])
+        subprocess.call(["iptables", "-t", "nat", "-A", "PREROUTING", "-p", "tcp", "--dport", port, "-j","DNAT","--to-destination", i[0] + ":22"])
     time.sleep(30)
     #for i in d:
     #    subprocess.call(["iptables", "-t", "nat", "-D", "PREROUTING", "-p", "tcp", "--dport", port, "-j","DNAT","--to-destination", i[0] + ":22"])
