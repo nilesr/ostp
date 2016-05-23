@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os, pyotp, subprocess, time
+import sys # debug
 def clean():
     subprocess.call(["iptables","-t","nat","-F"])
     subprocess.call(["iptables","-t","nat","-A","POSTROUTING","-j","MASQUERADE"])
@@ -49,7 +50,7 @@ ports_to_remove = []
 for i in d:
     port = fixport(i[1].now())
     subprocess.call(["iptables", "-t", "nat", "-A", "PREROUTING", "-p", "tcp", "--dport", port, "-j","DNAT","--to-destination", i[0] + ":22"])
-    port = fixport(i[1].at(int(time.time()) + 30))
+    port = fixport(i[1].at(int(time.time()) - 30))
     subprocess.call(["iptables", "-t", "nat", "-A", "PREROUTING", "-p", "tcp", "--dport", port, "-j","DNAT","--to-destination", i[0] + ":22"])
 while True:
     for i in d:
@@ -59,4 +60,5 @@ while True:
         ports_to_remove.append([port, i[0] + ":22"]) # only the 30 seconds ago one is removed
     time.sleep(30)
     for i in ports_to_remove:
+        print(i, file=sys.stderr)
         subprocess.call(["iptables", "-t", "nat", "-D", "PREROUTING", "-p", "tcp", "--dport", i[0], "-j","DNAT","--to-destination", i[1]])
