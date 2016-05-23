@@ -4,8 +4,11 @@ def clean():
     subprocess.call(["iptables","-t","nat","-F"])
     subprocess.call(["iptables","-t","nat","-A","POSTROUTING","-j","MASQUERADE"])
 def fixport(s):
+    s = str(s)
     while s[0] == "0":
         s = s[1:]
+    while len(s) > 4:
+        s = s[:-1]
     return s
 computers = {
         2: "Hazel-Alder",
@@ -45,11 +48,11 @@ clean()
 subprocess.call(["sysctl", "net.ipv4.ip_forward=1"])
 while True:
     for i in d:
-        port = fixport(str(i[1].now())[:4])
+        port = fixport(i[1].now())
         subprocess.call(["iptables", "-t", "nat", "-A", "PREROUTING", "-p", "tcp", "--dport", port, "-j","DNAT","--to-destination", i[0] + ":22"])
-        port = fixport(str(i[1].at(int(time.time()) + 30))[:4])
+        port = fixport(i[1].at(int(time.time()) + 30))
         subprocess.call(["iptables", "-t", "nat", "-A", "PREROUTING", "-p", "tcp", "--dport", port, "-j","DNAT","--to-destination", i[0] + ":22"])
-        port = fixport(str(i[1].at(int(time.time()) - 30))[:4])
+        port = fixport(i[1].at(int(time.time()) - 30))
         subprocess.call(["iptables", "-t", "nat", "-A", "PREROUTING", "-p", "tcp", "--dport", port, "-j","DNAT","--to-destination", i[0] + ":22"])
     time.sleep(30)
     #for i in d:
