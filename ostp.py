@@ -38,10 +38,11 @@ for i in range(len(d)):
         name = computers[id]
     filename = "/opt/ostp/" + d[i][0] + ".url"
     f = open(filename, "w")
-    f.write(d[i][1].provisioning_uri(name))
+    f.write(d[i][1].provisioning_uri(name) + '&issuer=ostp')
     f.close()
     #print(d[i][1].now())
 clean()
+subprocess.call(["sysctl", "net.ipv4.ip_forward=1"])
 while True:
     for i in d:
         port = fixport(str(i[1].now())[:4])
