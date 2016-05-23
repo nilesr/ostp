@@ -43,18 +43,20 @@ for i in range(len(d)):
     f = open(filename, "w")
     f.write(d[i][1].provisioning_uri(name) + '&issuer=ostp')
     f.close()
-    #print(d[i][1].now())
 clean()
 subprocess.call(["sysctl", "net.ipv4.ip_forward=1"])
+ports_to_remove = []
+for i in d:
+    port = fixport(i[1].now())
+    subprocess.call(["iptables", "-t", "nat", "-A", "PREROUTING", "-p", "tcp", "--dport", port, "-j","DNAT","--to-destination", i[0] + ":22"])
+    port = fixport(i[1].at(int(time.time()) + 30))
+    subprocess.call(["iptables", "-t", "nat", "-A", "PREROUTING", "-p", "tcp", "--dport", port, "-j","DNAT","--to-destination", i[0] + ":22"])
 while True:
     for i in d:
-        port = fixport(i[1].now())
-        subprocess.call(["iptables", "-t", "nat", "-A", "PREROUTING", "-p", "tcp", "--dport", port, "-j","DNAT","--to-destination", i[0] + ":22"])
         port = fixport(i[1].at(int(time.time()) + 30))
         subprocess.call(["iptables", "-t", "nat", "-A", "PREROUTING", "-p", "tcp", "--dport", port, "-j","DNAT","--to-destination", i[0] + ":22"])
         port = fixport(i[1].at(int(time.time()) - 30))
-        subprocess.call(["iptables", "-t", "nat", "-A", "PREROUTING", "-p", "tcp", "--dport", port, "-j","DNAT","--to-destination", i[0] + ":22"])
+        ports_to_remove.append([port, i[0] + ":22"]) # only the 30 seconds ago one is removed
     time.sleep(30)
-    #for i in d:
-    #    subprocess.call(["iptables", "-t", "nat", "-D", "PREROUTING", "-p", "tcp", "--dport", port, "-j","DNAT","--to-destination", i[0] + ":22"])
-    clean()
+    for i in ports_to_remove:
+        subprocess.call(["iptables", "-t", "nat", "-D", "PREROUTING", "-p", "tcp", "--dport", i[0], "-j","DNAT","--to-destination", i[1]])
