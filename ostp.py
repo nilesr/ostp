@@ -47,18 +47,22 @@ for i in range(len(d)):
 clean()
 subprocess.call(["sysctl", "net.ipv4.ip_forward=1"])
 ports_to_remove = []
-for i in d:
-    port = fixport(i[1].now())
-    subprocess.call(["iptables", "-t", "nat", "-A", "PREROUTING", "-p", "tcp", "--dport", port, "-j","DNAT","--to-destination", i[0] + ":22"])
-    port = fixport(i[1].at(int(time.time()) - 30))
-    subprocess.call(["iptables", "-t", "nat", "-A", "PREROUTING", "-p", "tcp", "--dport", port, "-j","DNAT","--to-destination", i[0] + ":22"])
+# for i in d:
+    # port = fixport(i[1].now())
+    # subprocess.call(["iptables", "-t", "nat", "-A", "PREROUTING", "-p", "tcp", "--dport", port, "-j","DNAT","--to-destination", i[0] + ":22"])
+    # port = fixport(i[1].at(int(time.time()) - 30))
+    # subprocess.call(["iptables", "-t", "nat", "-A", "PREROUTING", "-p", "tcp", "--dport", port, "-j","DNAT","--to-destination", i[0] + ":22"])
 while True:
     for i in d:
-        port = fixport(i[1].at(int(time.time()) + 30))
+        port = fixport(i[1].now())
         subprocess.call(["iptables", "-t", "nat", "-A", "PREROUTING", "-p", "tcp", "--dport", port, "-j","DNAT","--to-destination", i[0] + ":22"])
         port = fixport(i[1].at(int(time.time()) - 30))
-        ports_to_remove.append([port, i[0] + ":22"]) # only the 30 seconds ago one is removed
+        subprocess.call(["iptables", "-t", "nat", "-A", "PREROUTING", "-p", "tcp", "--dport", port, "-j","DNAT","--to-destination", i[0] + ":22"])
+        # ports_to_remove.append([port, i[0] + ":22"]) # only the 30 seconds ago one is removed
+        port = fixport(i[1].at(int(time.time()) + 30))
+        subprocess.call(["iptables", "-t", "nat", "-A", "PREROUTING", "-p", "tcp", "--dport", port, "-j","DNAT","--to-destination", i[0] + ":22"])
     time.sleep(30)
-    for i in ports_to_remove:
-        print(i, file=sys.stderr)
-        subprocess.call(["iptables", "-t", "nat", "-D", "PREROUTING", "-p", "tcp", "--dport", i[0], "-j","DNAT","--to-destination", i[1]])
+    # for i in ports_to_remove:
+        # print(i, file=sys.stderr)
+        # subprocess.call(["iptables", "-t", "nat", "-D", "PREROUTING", "-p", "tcp", "--dport", i[0], "-j","DNAT","--to-destination", i[1]])
+    clean()
